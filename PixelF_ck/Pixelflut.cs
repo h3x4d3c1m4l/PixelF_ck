@@ -3,6 +3,7 @@ using ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -80,6 +81,8 @@ namespace PixelF_ck
                     }
                 }
             }
+            var rnd = new Random();
+            data = data.OrderBy(x => rnd.Next()).ToArray();
         }
 
         public async Task SendImage()
