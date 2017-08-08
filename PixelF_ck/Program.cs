@@ -38,8 +38,8 @@ namespace ConsoleApp1
                 var res = await pf.GetResolutionAsync();
                 Console.WriteLine($"Connected, screen res: {res.X}x{res.Y}");
 
-                res.X = 400;
-                res.Y = 300;
+                res.X = 240;
+                res.Y = 200;
 
                 // decode image and resize to screen res
                 Rgba32[] pixels;
@@ -72,7 +72,7 @@ namespace ConsoleApp1
                                 try
                                 {
                                     await tpf.Connect();
-                                    tpf.LoadImage(hexPixels, res.X, 500);
+                                    tpf.LoadImage(hexPixels, res.X, 500, 80);
                                     while (true)
                                     {
                                         await tpf.SendImage();

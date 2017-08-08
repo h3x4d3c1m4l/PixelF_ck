@@ -54,7 +54,7 @@ namespace PixelF_ck
 
         private byte[][] data;
 
-        public void LoadImage(string[] pPixels, int pHorizontalPixels, int pBulk)
+        public void LoadImage(string[] pPixels, int pHorizontalPixels, int pBulk, int pLeftOffset)
         {
             var px = 0;
             var nBytes = (int) Math.Ceiling(pPixels.Length / (double)pBulk);
@@ -67,7 +67,7 @@ namespace PixelF_ck
             {
                 for (var x = 0; x < pHorizontalPixels; x++)
                 {
-                    sBulk += $"PX {x} {y} {pPixels[px]}\n";
+                    sBulk += $"PX {x + pLeftOffset} {y} {pPixels[px]}\n";
                     px++;
                     nBulk++;
 
