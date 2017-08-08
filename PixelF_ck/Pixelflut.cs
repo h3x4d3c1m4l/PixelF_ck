@@ -13,6 +13,8 @@ namespace PixelF_ck
     {
         private TcpClient _client;
 
+        private Stream _stream;
+
         private StreamReader _reader;
 
         private StreamWriter _writer;
@@ -20,6 +22,8 @@ namespace PixelF_ck
         private string _hostname;
 
         private ushort _port;
+
+        private int _batchSize;
 
         public Pixelflut(string pHostname, ushort pPort)
         {
@@ -31,8 +35,9 @@ namespace PixelF_ck
         {
             _client = new TcpClient();
             await _client.ConnectAsync(_hostname, _port);
-            _writer = new StreamWriter(_client.GetStream(), Encoding.ASCII);
-            _reader = new StreamReader(_client.GetStream(), Encoding.ASCII);
+            _stream = _client.GetStream();
+            _writer = new StreamWriter(_stream, Encoding.ASCII);
+            _reader = new StreamReader(_stream, Encoding.ASCII);
         }
 
         public async Task<(int X, int Y)> GetResolutionAsync()
@@ -47,19 +52,40 @@ namespace PixelF_ck
             return (int.Parse(split[1]), int.Parse(split[2]));
         }
 
-        public async Task SendImage(string[] pPixels, int pHorizontalPixels)
+        private byte[][] data;
+
+        public void LoadImage(string[] pPixels, int pHorizontalPixels, int pBulk)
         {
             var px = 0;
- 
+            var nBytes = (int) Math.Ceiling(pPixels.Length / (double)pBulk);
+            data = new byte[nBytes][];
+            var nBulk = 0;
+            var iBulk = 0;
+            var sBulk = string.Empty;
+
             for (var y = 0; y < (pPixels.Length / pHorizontalPixels); y++)
             {
                 for (var x = 0; x < pHorizontalPixels; x++)
                 {
-                    await _writer.WriteAsync($"PX {x} {y} {pPixels[px]}\n");
-                    await _writer.FlushAsync();
+                    sBulk += $"PX {x} {y} {pPixels[px]}\n";
                     px++;
+                    nBulk++;
+
+                    if (nBulk == pBulk || (px == pPixels.Length - 1))
+                    {
+                        nBulk = 0;
+                        data[iBulk] = Encoding.ASCII.GetBytes(sBulk);
+                        sBulk = string.Empty;
+                        iBulk++;
+                    }
                 }
             }
+        }
+
+        public async Task SendImage()
+        {
+            foreach (var d in data)
+                await _stream.WriteAsync(d, 0, d.Length);
         }
 
         #region IDisposable Support

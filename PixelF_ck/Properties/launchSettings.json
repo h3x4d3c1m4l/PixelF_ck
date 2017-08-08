@@ -2,7 +2,7 @@
   "profiles": {
     "PixelF_ck": {
       "commandName": "Project",
-      "commandLineArgs": "barflood.sha2017.org 2342 C:\\temp\\test.png 5"
+      "commandLineArgs": "barflood.sha2017.org 2342 C:\\temp\\test.png"
     }
   }
 }

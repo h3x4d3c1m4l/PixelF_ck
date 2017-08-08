@@ -17,16 +17,15 @@ namespace ConsoleApp1
 
         private static ushort _ports;
 
-        private static int _threads;
+        private static int _threads = 1;
 
         private static void Main(string[] args)
         {
             _hostname = args[0];
             _ports = ushort.Parse(args[1]);
             _file = args[2];
-            _threads = int.Parse(args[3]);
 
-            Test().Wait();
+            Test();
             Console.In.Read();
         }
 
@@ -38,6 +37,9 @@ namespace ConsoleApp1
                 await pf.Connect();
                 var res = await pf.GetResolutionAsync();
                 Console.WriteLine($"Connected, screen res: {res.X}x{res.Y}");
+
+                res.X = 400;
+                res.Y = 300;
 
                 // decode image and resize to screen res
                 Rgba32[] pixels;
@@ -61,7 +63,7 @@ namespace ConsoleApp1
                 var hexPixels = pixels.Select(x => x.ToHex().Substring(0, 6)).ToArray();
                 for (var i = 0; i < _threads; i++)
                 {
-                    var t = new Thread(() =>
+                    var t = new Thread(async () =>
                     {
                         using (var tpf = new Pixelflut(_hostname, _ports))
                         {
@@ -69,10 +71,11 @@ namespace ConsoleApp1
                             {
                                 try
                                 {
-                                    tpf.Connect().Wait();
+                                    await tpf.Connect();
+                                    tpf.LoadImage(hexPixels, res.X, 500);
                                     while (true)
                                     {
-                                        tpf.SendImage(hexPixels, res.X).Wait();
+                                        await tpf.SendImage();
                                         Console.Out.Write('*');
                                     }
                                 }
