@@ -72,7 +72,7 @@ namespace ConsoleApp1
                                 try
                                 {
                                     await tpf.Connect();
-                                    tpf.LoadImage(hexPixels, res.X, 2000);
+                                    tpf.LoadImage(hexPixels, res.X, 1000);
                                     while (true)
                                     {
                                         await tpf.SendImage();
