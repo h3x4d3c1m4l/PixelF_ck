@@ -27,6 +27,7 @@ namespace ConsoleApp1
 
             Test();
             Console.In.Read();
+            Console.Out.Write("END");
         }
 
         private static async Task Test()
@@ -61,6 +62,7 @@ namespace ConsoleApp1
                 }
 
                 var hexPixels = pixels.Select(x => x.ToHex().Substring(0, 6)).ToArray();
+                Console.Out.Write("Starting threads");
                 for (var i = 0; i < _threads; i++)
                 {
                     var t = new Thread(async () =>
@@ -76,7 +78,7 @@ namespace ConsoleApp1
                                     while (true)
                                     {
                                         await tpf.SendImage();
-                                        Console.Out.Write('*');
+                                        //Console.Out.Write('*');
                                     }
                                 }
                                 catch (Exception ex)
