@@ -3,6 +3,7 @@ using PixelF_ck;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -57,6 +58,7 @@ namespace ConsoleApp1
                     image.SaveAsPng(File.OpenWrite(@"C:\temp\test2.png"));
                 }
 
+                var hexPixels = pixels.Select(x => x.ToHex().Substring(0, 6)).ToArray();
                 for (var i = 0; i < _threads; i++)
                 {
                     var t = new Thread(() =>
@@ -70,13 +72,13 @@ namespace ConsoleApp1
                                     tpf.Connect().Wait();
                                     while (true)
                                     {
-                                        tpf.SendImage(pixels, res.X).Wait();
+                                        tpf.SendImage(hexPixels, res.X).Wait();
                                         Console.Out.Write('*');
                                     }
                                 }
                                 catch (Exception ex)
                                 {
-                                    //
+                                    // thread crash
                                     Console.Out.Write('X');
                                 }
                             }

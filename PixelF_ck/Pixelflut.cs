@@ -47,7 +47,7 @@ namespace PixelF_ck
             return (int.Parse(split[1]), int.Parse(split[2]));
         }
 
-        public async Task SendImage(Rgba32[] pPixels, int pHorizontalPixels)
+        public async Task SendImage(string[] pPixels, int pHorizontalPixels)
         {
             var px = 0;
  
@@ -55,7 +55,8 @@ namespace PixelF_ck
             {
                 for (var x = 0; x < pHorizontalPixels; x++)
                 {
-                    await _writer.WriteAsync($"PX {x} {y} {pPixels[px].ToHex().Substring(0, 6)}\n");
+                    await _writer.WriteAsync($"PX {x} {y} {pPixels[px]}\n");
+                    await _writer.FlushAsync();
                     px++;
                 }
             }
