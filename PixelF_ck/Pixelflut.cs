@@ -1,6 +1,4 @@
-﻿using ImageSharp;
-using ImageSharp.PixelFormats;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -55,10 +53,10 @@ namespace PixelF_ck
 
         private byte[][] data;
 
-        public void LoadImage(string[] pPixels, int pHorizontalPixels, int pBulk, int pLeftOffset)
+        public void LoadImage(string[] pPixels, int pHorizontalPixels, int pBulk, int pLeftOffset, int pTopOffset)
         {
             var px = 0;
-            var nBytes = (int) Math.Ceiling(pPixels.Length / (double)pBulk);
+            var nBytes = (int)Math.Ceiling(pPixels.Length / (double)pBulk);
             data = new byte[nBytes][];
             var nBulk = 0;
             var iBulk = 0;
@@ -68,7 +66,7 @@ namespace PixelF_ck
             {
                 for (var x = 0; x < pHorizontalPixels; x++)
                 {
-                    sBulk += $"PX {x + pLeftOffset} {y} {pPixels[px]}\n";
+                    sBulk += $"PX {x + pLeftOffset} {y + pTopOffset} {pPixels[px]}\n";
                     px++;
                     nBulk++;
 

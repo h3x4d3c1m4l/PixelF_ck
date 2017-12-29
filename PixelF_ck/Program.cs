@@ -1,11 +1,15 @@
-﻿using ImageSharp;
-using PixelF_ck;
+﻿using PixelF_ck;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommandLine;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.Primitives;
+using SixLabors.ImageSharp.Helpers;
 
 namespace ConsoleApp1
 {
@@ -17,17 +21,33 @@ namespace ConsoleApp1
 
         private static ushort _ports;
 
+        private static int _leftMargin;
+
+        private static int _rightMargin;
+
+        private static int _topMargin;
+
+        private static int _bottomMargin;
+
         private static int _threads = 1;
 
         private static void Main(string[] args)
         {
-            _hostname = args[0];
-            _ports = ushort.Parse(args[1]);
-            _file = args[2];
+            var cmdLineParserResult = Parser.Default.ParseArguments<Options>(args);
+            var settings = cmdLineParserResult.WithParsed(pOptions =>
+            {
+                _hostname = pOptions.Hostname;
+                _ports = pOptions.Port;
+                _file = pOptions.Image;
+                _leftMargin = pOptions.LeftMargin;
+                _rightMargin = pOptions.RightMargin;
+                _topMargin = pOptions.TopMargin;
+                _bottomMargin = pOptions.BottomMargin;
 
-            Test();
+                Test();
+            });
             Console.In.Read();
-            Console.Out.Write("END");
+            Console.Out.Write("END"); 
         }
 
         private static async Task Test()
@@ -35,28 +55,38 @@ namespace ConsoleApp1
             using (var pf = new Pixelflut(_hostname, _ports))
             {
                 // connect and get resolution
+                Console.WriteLine($"Connecting ...");
                 await pf.Connect();
+                Console.WriteLine($"Connected, retrieving res ...");
                 var res = await pf.GetResolutionAsync();
-                Console.WriteLine($"Connected, screen res: {res.X}x{res.Y}");
+                Console.WriteLine($"Screen res: {res.X}x{res.Y}");
 
-                res.X = 240;
-                res.Y = 200;
+                res.X = res.X - _leftMargin - _rightMargin;
+                res.Y = res.Y - _topMargin - _bottomMargin;
 
                 // decode image and resize to screen res
                 Rgba32[] pixels;
-                using (Image<Rgba32> image = Image.Load(_file))
+                using (var image = Image.Load(_file))
                 {
+                    pixels = new Rgba32[image.Width * image.Height];
                     Console.WriteLine($"Img size: {image.Width}x{image.Height}");
                     // https://stackoverflow.com/questions/1940581/c-sharp-image-resizing-to-different-size-while-preserving-aspect-ratio
-                    double ratioX = res.X / (double)image.Width;
-                    double ratioY = res.Y / (double)image.Height;
-                    double ratio = ratioX < ratioY ? ratioX : ratioY;
-                    int newHeight = Convert.ToInt32(image.Height * ratio);
-                    int newWidth = Convert.ToInt32(image.Width * ratio);
-                    image.Resize(newWidth, newHeight);
+                    var ratioX = res.X / (double)image.Width;
+                    var ratioY = res.Y / (double)image.Height;
+                    var ratio = ratioX < ratioY ? ratioX : ratioY;
+                    var newHeight = Convert.ToInt32(image.Height * ratio);
+                    var newWidth = Convert.ToInt32(image.Width * ratio);
+                    image.Mutate(x => x.Resize(new ResizeOptions { Size = new Size(newWidth, newHeight) }));
+                    //image.Resize(newWidth, newHeight); // old API
                     Console.WriteLine($"Image resized to: {image.Width}x{image.Height}");
-                    image.Pad(res.X, res.Y);
-                    pixels = image.Pixels.ToArray();
+                    image.Mutate(x => x.Pad(res.X, res.Y));
+                    //image.Pad(res.X, res.Y); // old API
+                    //pixels = image.Pixels.ToArray(); // old API
+                    var pixelBytes = image.SavePixelData(); // TODO !!!
+                    for (var i = 0; i < pixelBytes.Length; i += 4)
+                    {
+                        pixels[i / 4] = new Rgba32(pixelBytes[i], pixelBytes[i + 1], pixelBytes[i + 2], pixelBytes[i + 3]);
+                    }
                     Console.WriteLine($"Image pad to: {image.Width}x{image.Height}");
                     image.SaveAsPng(File.OpenWrite(@"C:\temp\test2.png"));
                 }
@@ -74,7 +104,7 @@ namespace ConsoleApp1
                                 try
                                 {
                                     await tpf.Connect();
-                                    tpf.LoadImage(hexPixels, res.X, 500, 80);
+                                    tpf.LoadImage(hexPixels, res.X, 500, _leftMargin, _topMargin);
                                     while (true)
                                     {
                                         await tpf.SendImage();
