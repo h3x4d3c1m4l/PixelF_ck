@@ -20,9 +20,15 @@ namespace PixelF_ck
         public string Hostname { get; set; } = "127.0.0.1";
 
         [Option('p', "port", HelpText = "Pixelflut server port (default = 8080)")]
-        public ushort Port { get; set; } = 1234;
+        public ushort Port { get; set; } = 8080;
         
         [Option('i', "image", HelpText = "Image filename", Required = true)]
         public string Image { get; set; }
+
+        [Option("threads", HelpText = "Amount of threads (default = 1)")]
+        public int Threads { get; set; } = 1;
+
+        [Option("bulkpixels", HelpText = "Amount of pixels to send in one message (default = 500)")]
+        public int Bulkpixels { get; set; } = 500;
     }
 }

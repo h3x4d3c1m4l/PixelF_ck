@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
@@ -29,7 +30,9 @@ namespace ConsoleApp1
 
         private static int _bottomMargin;
 
-        private static int _threads = 1;
+        private static int _threads;
+
+        private static int _bulkPixels;
 
         private static void Main(string[] args)
         {
@@ -43,6 +46,8 @@ namespace ConsoleApp1
                 _rightMargin = pOptions.RightMargin;
                 _topMargin = pOptions.TopMargin;
                 _bottomMargin = pOptions.BottomMargin;
+                _threads = pOptions.Threads;
+                _bulkPixels = pOptions.Bulkpixels;
 
                 Test();
             });
@@ -61,8 +66,8 @@ namespace ConsoleApp1
                 var res = await pf.GetResolutionAsync();
                 Console.WriteLine($"Screen res: {res.X}x{res.Y}");
 
-                res.X = res.X - _leftMargin - _rightMargin;
-                res.Y = res.Y - _topMargin - _bottomMargin;
+                var imageX = res.X - _leftMargin - _rightMargin;
+                var imageY = res.Y - _topMargin - _bottomMargin;
 
                 // decode image and resize to screen res
                 Rgba32[] pixels;
@@ -71,24 +76,20 @@ namespace ConsoleApp1
                     pixels = new Rgba32[image.Width * image.Height];
                     Console.WriteLine($"Img size: {image.Width}x{image.Height}");
                     // https://stackoverflow.com/questions/1940581/c-sharp-image-resizing-to-different-size-while-preserving-aspect-ratio
-                    var ratioX = res.X / (double)image.Width;
-                    var ratioY = res.Y / (double)image.Height;
+                    var ratioX = imageX / (double)image.Width;
+                    var ratioY = imageY / (double)image.Height;
                     var ratio = ratioX < ratioY ? ratioX : ratioY;
                     var newHeight = Convert.ToInt32(image.Height * ratio);
                     var newWidth = Convert.ToInt32(image.Width * ratio);
+                    Console.WriteLine($"Resizing image to: {newWidth}x{newHeight}");
                     image.Mutate(x => x.Resize(new ResizeOptions { Size = new Size(newWidth, newHeight) }));
-                    //image.Resize(newWidth, newHeight); // old API
-                    Console.WriteLine($"Image resized to: {image.Width}x{image.Height}");
-                    image.Mutate(x => x.Pad(res.X, res.Y));
-                    //image.Pad(res.X, res.Y); // old API
-                    //pixels = image.Pixels.ToArray(); // old API
-                    var pixelBytes = image.SavePixelData(); // TODO !!!
+                    Console.WriteLine($"Image resized!");
+                    image.Mutate(x => x.Pad(imageX, imageY));
+                    var pixelBytes = image.SavePixelData();
                     for (var i = 0; i < pixelBytes.Length; i += 4)
                     {
                         pixels[i / 4] = new Rgba32(pixelBytes[i], pixelBytes[i + 1], pixelBytes[i + 2], pixelBytes[i + 3]);
                     }
-                    Console.WriteLine($"Image pad to: {image.Width}x{image.Height}");
-                    image.SaveAsPng(File.OpenWrite(@"C:\temp\test2.png"));
                 }
 
                 var hexPixels = pixels.Select(x => x.ToHex().Substring(0, 6)).ToArray();
@@ -104,7 +105,7 @@ namespace ConsoleApp1
                                 try
                                 {
                                     await tpf.Connect();
-                                    tpf.LoadImage(hexPixels, res.X, 500, _leftMargin, _topMargin);
+                                    tpf.LoadImage(hexPixels, imageX, _bulkPixels, _leftMargin - 1, _topMargin - 1);
                                     while (true)
                                     {
                                         await tpf.SendImage();
@@ -114,7 +115,10 @@ namespace ConsoleApp1
                                 catch (Exception ex)
                                 {
                                     // thread crash
-                                    Console.Out.Write('X');
+                                    lock (Console.Out)
+                                    {
+                                        Console.Out.WriteLine(ex);
+                                    }
                                 }
                             }
                         }
