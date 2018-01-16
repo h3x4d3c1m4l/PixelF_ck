@@ -73,7 +73,7 @@ namespace ConsoleApp1
                 Rgba32[] pixels;
                 using (var image = Image.Load(_file))
                 {
-                    pixels = new Rgba32[image.Width * image.Height];
+                    pixels = new Rgba32[imageX * imageY];
                     Console.WriteLine($"Img size: {image.Width}x{image.Height}");
                     // https://stackoverflow.com/questions/1940581/c-sharp-image-resizing-to-different-size-while-preserving-aspect-ratio
                     var ratioX = imageX / (double)image.Width;
@@ -85,7 +85,9 @@ namespace ConsoleApp1
                     image.Mutate(x => x.Resize(new ResizeOptions { Size = new Size(newWidth, newHeight) }));
                     Console.WriteLine($"Image resized!");
                     image.Mutate(x => x.Pad(imageX, imageY));
+                    Console.WriteLine($"Image padded!");
                     var pixelBytes = image.SavePixelData();
+                    Console.WriteLine($"Saved pixel data!");
                     for (var i = 0; i < pixelBytes.Length; i += 4)
                     {
                         pixels[i / 4] = new Rgba32(pixelBytes[i], pixelBytes[i + 1], pixelBytes[i + 2], pixelBytes[i + 3]);
@@ -93,7 +95,7 @@ namespace ConsoleApp1
                 }
 
                 var hexPixels = pixels.Select(x => x.ToHex().Substring(0, 6)).ToArray();
-                Console.Out.Write("Starting threads");
+                Console.WriteLine("Starting threads");
                 for (var i = 0; i < _threads; i++)
                 {
                     var t = new Thread(async () =>
@@ -105,7 +107,7 @@ namespace ConsoleApp1
                                 try
                                 {
                                     await tpf.Connect();
-                                    tpf.LoadImage(hexPixels, imageX, _bulkPixels, _leftMargin - 1, _topMargin - 1);
+                                    tpf.LoadImage(hexPixels, imageX, _bulkPixels, _leftMargin, _topMargin);
                                     while (true)
                                     {
                                         await tpf.SendImage();

@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.16
+VisualStudioVersion = 15.0.27130.2020
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PixelF_ck", "PixelF_ck\PixelF_ck.csproj", "{B78B7FA9-7CFB-4E38-9C4C-1C0613750FB0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PixelF_ck", "PixelF_ck\PixelF_ck.csproj", "{B78B7FA9-7CFB-4E38-9C4C-1C0613750FB0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PixelflutServer", "PixelflutServer\PixelflutServer.csproj", "{61246B2F-4797-4C1E-8A3A-C311DD18C1D5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,8 +17,15 @@ Global
 		{B78B7FA9-7CFB-4E38-9C4C-1C0613750FB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B78B7FA9-7CFB-4E38-9C4C-1C0613750FB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B78B7FA9-7CFB-4E38-9C4C-1C0613750FB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61246B2F-4797-4C1E-8A3A-C311DD18C1D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61246B2F-4797-4C1E-8A3A-C311DD18C1D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61246B2F-4797-4C1E-8A3A-C311DD18C1D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61246B2F-4797-4C1E-8A3A-C311DD18C1D5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FF76DE2B-CE85-455F-82E9-E062F95A847D}
 	EndGlobalSection
 EndGlobal
